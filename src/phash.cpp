@@ -28,6 +28,7 @@
 #include <sstream>
 #include <fstream>
 #include <cstdio>
+#include <sys/stat.h>
 
 using namespace node;
 using namespace v8;
@@ -51,14 +52,14 @@ const char* toCString(const String::Utf8Value& value) {
 }
 
 bool fileExists(const char* filename) {
-    ifstream file(filename);
-    return file.good();
+    struct stat buffer;   
+    return (stat (filename, &buffer) == 0); 
 }
 
 const string getHash(const char* file) {
     // prevent segfault on an empty file, see https://github.com/aaronm67/node-phash/issues/8
     if (!fileExists(file)) {
-        return "0";
+        return "-2";
     }
 
     string ret;
@@ -69,7 +70,7 @@ const string getHash(const char* file) {
     }
     catch (...) {
         // something went wrong; probably a problem with CImg.
-        return "0";
+        return "-1";
     }
 }
 
@@ -92,7 +93,11 @@ class PhashRequest : public Nan::AsyncWorker {
         };
 
         if (hash == "0") {
+            argv[0] = Nan::Error("Unknown hash");
+        } else if (hash == "-1") {
             argv[0] = Nan::Error("Error getting image hash");
+        } else if (hash == "-2") {
+            argv[0] = Nan::Error("File not found");
         }
 
         callback->Call(2, argv);
