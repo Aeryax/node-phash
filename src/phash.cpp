@@ -73,6 +73,23 @@ const string getHash(const char* file) {
         return "-1";
     }
 }
+/*
+const string getDigest(const char* file, double sigma, double gamma, Digest &digest) {
+    // prevent segfault on an empty file, see https://github.com/aaronm67/node-phash/issues/8
+    if (!fileExists(file)) {
+        return "-2";
+    }
+
+    string ret;
+    try {
+        int r = ph_image_digest(file, sigma, gamma, digest);
+        return NumberToString(r);
+    }
+    catch (...) {
+        // something went wrong; probably a problem with CImg.
+        return "-1";
+    }
+}*/
 
 class PhashRequest : public Nan::AsyncWorker {
   public:
@@ -125,6 +142,7 @@ void ImageHashSync(const Nan::FunctionCallbackInfo<v8::Value>& args) {
     Nan::HandleScope scope;
     String::Utf8Value str(args[0]);
     string result = getHash(*str);
+
     args.GetReturnValue().Set(Nan::New(result.c_str()).ToLocalChecked());
 }
 
@@ -159,10 +177,71 @@ void oldHash(const Nan::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(Nan::New<v8::Number>(hash));
 }
 
+
+/*
+void CrossCorr(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+    Nan::HandleScope scope;
+
+    Isolate* isolate = args.GetIsolate();
+
+    double pcc = args[2]->NumberValue();
+
+    string test = NumberToString(pcc);
+
+    // Throw an Error that is passed back to JavaScript
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "test")));
+    return;
+
+
+    
+    //int crossCorrelation = ph_crosscorr(digest1,digest2,pcc);
+
+    int crossCorrelation = 1;
+
+    args.GetReturnValue().Set(Nan::New<v8::Number>(crossCorrelation));
+}*/
+
+void CompareImage(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+    Nan::HandleScope scope;
+    String::Utf8Value fileA(args[0]);
+    String::Utf8Value fileB(args[1]);
+
+    double pcc;
+
+    string ret;
+    
+    // prevent segfault on an empty file, see https://github.com/aaronm67/node-phash/issues/8
+    if (!fileExists(*fileA)) {
+        ret = "-2";
+    }
+
+    // prevent segfault on an empty file, see https://github.com/aaronm67/node-phash/issues/8
+    if (!fileExists(*fileB)) {
+        ret = "-2";
+    }
+
+    
+    try {
+        int val = ph_compare_images(*fileA, *fileB, pcc);
+
+        ///return int 0 (false) for different image, 1 (true) for same images, less than 0 for error
+        ret = NumberToString(val);
+    }
+    catch (...) {
+        // something went wrong; probably a problem with CImg.
+        ret = "-1";
+    }
+
+    args.GetReturnValue().Set(Nan::New(ret.c_str()).ToLocalChecked());
+}
+
 void RegisterModule(Handle<Object> target) {
     Nan::SetMethod(target, "imageHashSync", ImageHashSync);
     Nan::SetMethod(target, "imageHash", ImageHashAsync);
     Nan::SetMethod(target, "hammingDistance", HammingDistance);
+    Nan::SetMethod(target, "compareImage", CompareImage);
+    //Nan::SetMethod(target, "crossCorr", CrossCorr);
 
     // methods below are deprecated
     Nan::SetMethod(target, "imagehash", ImageHashAsync);

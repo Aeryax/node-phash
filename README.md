@@ -1,5 +1,3 @@
-# pHash [![NPM version](https://badge.fury.io/js/phash.png)](http://badge.fury.io/js/phash) [![Build Status](https://travis-ci.org/aaronm67/node-phash.png?branch=master)](https://travis-ci.org/aaronm67/node-phash)
-
 [pHash](http://www.phash.org/) bindings for [Node.js](http://nodejs.org/).
 
 A pHash is a "perceptual hash" of a multimedia file derived from various features from its content. This can be useful to compare similar files, create database indices and so on.
@@ -8,7 +6,7 @@ Note: Currently supports only images - no video or audio.
 
 ## Installation
 
-    $ npm install phash
+    $ npm install aeryax/phash
 
 ## Usage
 
@@ -52,6 +50,14 @@ Computes the [Hamming distance](http://en.wikipedia.org/wiki/Hamming_distance) b
 
 ```
 hammingDistance(hashA, hashB);
+```
+
+### pHash#compareImage
+
+Compare 2 images given the file names, return '0' (false) for different image, '1' (true) for same images, less than '0' for error
+
+```
+compareImage(filenameA, filenameB);
 ```
 
 ## License

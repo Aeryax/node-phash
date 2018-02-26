@@ -28,12 +28,12 @@ describe("pHash", function() {
     describe("invalid file test", function() {
         it("should fail", function() {
             var hash = pHash.imageHashSync("fake/path/here");
-            hash.should.equal("0");
+            hash.should.equal("-2");
         });
 
         it("should fail", function(done) {
             pHash.imageHash("fake/path/here", function(err, hash) {
-                assert.equal(err.message, "Error getting image hash");
+                assert.equal(err.message, "File not found");
                 assert(err);
                 done();
             });
@@ -58,7 +58,7 @@ describe("pHash", function() {
 
         it("should fail", function(done) { 
             pHash.imageHash(__dirname + "/data/f.png", function(err, hash) {
-                assert.equal(err.message, "Error getting image hash");
+                assert.equal(err.message, "Unknown hash");
                 assert(err);
                 done();
             });
@@ -103,4 +103,16 @@ describe("pHash", function() {
             hammingAD.should.equal(12);
         }); 
     });
+
+    describe('compareImage()', function() {
+        it('should be done', function() {
+            var resultAA = pHash.compareImage(examples[0].path,examples[1].path);
+            resultAA.should.equal('1');
+        }); 
+        it('should fail', function() {
+            var resultAC = pHash.compareImage(examples[0].path,examples[2].path);
+            resultAC.should.equal('0');
+        }); 
+    });
 });
+
